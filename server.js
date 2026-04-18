@@ -28,7 +28,13 @@ app.use(express.static(path.join(__dirname)));
 const COLORS = [
   "#e74c3c", "#3498db", "#2ecc71", "#f39c12", "#9b59b6",
   "#1abc9c", "#e67e22", "#607d8b", "#e91e63", "#00bcd4",
-  "#8bc34a", "#ff5722", "#cddc39", "#795548", "#ffc107"
+  "#8bc34a", "#ff5722", "#cddc39", "#795548", "#ffc107",
+  "#9c27b0", "#3f51b5", "#009688", "#ff9800", "#673ab7"
+];
+
+const BOT_NAMES = [
+  "BotAli", "BotVeli", "BotHasan", "BotHüseyin", "BotMehmet", "BotAhmet", "BotAyşe", "BotFatma", "BotZeynep", "BotElif",
+  "BotCan", "BotDeniz", "BotEce", "Botİrem", "BotKaan", "BotMert", "BotOğuz", "BotSelin", "BotYusuf", "BotZara"
 ];
 
 const rooms = new Map();
@@ -344,9 +350,10 @@ io.on("connection", (socket) => {
     while (room.players.size < room.capacity) {
       const botId = `bot${botCount++}`;
       const idx = room.players.size % COLORS.length;
+      const nameIdx = (botCount - 2) % BOT_NAMES.length;
       const sp = spawnPosition(room);
       room.players.set(botId, {
-        name: `Bot${botCount - 1}`,
+        name: BOT_NAMES[nameIdx],
         color: COLORS[idx],
         x: sp.x,
         y: sp.y,
@@ -484,8 +491,8 @@ setInterval(() => {
           return;
         }
       } else if (p.role === "masum") {
-        // Innocent: random movement, avoid walls
-        if (Math.random() < 0.02) { // Change direction occasionally
+        // Innocent: random movement with evasion, avoid walls
+        if (Math.random() < 0.05) { // Change direction more often for evasion
           const dir = Math.floor(Math.random() * 4);
           p.input = { up: dir === 0, down: dir === 1, left: dir === 2, right: dir === 3 };
         }
