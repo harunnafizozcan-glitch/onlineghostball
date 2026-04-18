@@ -281,7 +281,7 @@ function broadcastOpenRooms() {
 io.on("connection", (socket) => {
   socket.emit("openRooms", openRoomsSnapshot());
 
-  socket.on("createRoom", ({ name, autoFill }, cb) => {
+  socket.on("createRoom", ({ name }, cb) => {
     const room = createRoom(socket.id);
     socket.join(room.id);
     room.players.set(socket.id, {
@@ -294,26 +294,6 @@ io.on("connection", (socket) => {
       input: { up: false, down: false, left: false, right: false },
       lastShotAt: 0
     });
-    if (autoFill) {
-      let botCount = 1;
-      while (room.players.size < room.capacity) {
-        const botId = `bot${botCount++}`;
-        const idx = room.players.size % COLORS.length;
-        const sp = spawnPosition(room);
-        room.players.set(botId, {
-          name: `Bot${botCount - 1}`,
-          color: COLORS[idx],
-          x: sp.x,
-          y: sp.y,
-          role: null,
-          alive: true,
-          input: { up: false, down: false, left: false, right: false },
-          lastShotAt: 0,
-          isBot: true
-        });
-      }
-      tryAutoStartIfFull(room);
-    }
     cb({ ok: true, roomId: room.id });
     broadcastRoom(room);
     broadcastOpenRooms();
@@ -354,6 +334,31 @@ io.on("connection", (socket) => {
       return;
     }
     if (startMatch(room)) broadcastRoom(room);
+    broadcastOpenRooms();
+  });
+
+  socket.on("fillWithBots", ({ roomId }) => {
+    const room = rooms.get((roomId || "").toUpperCase());
+    if (!room || room.hostSocketId !== socket.id || room.status !== "lobby") return;
+    let botCount = 1;
+    while (room.players.size < room.capacity) {
+      const botId = `bot${botCount++}`;
+      const idx = room.players.size % COLORS.length;
+      const sp = spawnPosition(room);
+      room.players.set(botId, {
+        name: `Bot${botCount - 1}`,
+        color: COLORS[idx],
+        x: sp.x,
+        y: sp.y,
+        role: null,
+        alive: true,
+        input: { up: false, down: false, left: false, right: false },
+        lastShotAt: 0,
+        isBot: true
+      });
+    }
+    tryAutoStartIfFull(room);
+    broadcastRoom(room);
     broadcastOpenRooms();
   });
 
