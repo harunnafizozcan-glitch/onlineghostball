@@ -100,6 +100,7 @@
     <div>Canli: <span id="aliveTextSide">0</span></div>
     <div id="spectateHint" style="display:none; color:#ffd47e;">Öldün. WASD ile kamerayı hareket ettir.</div>
     <button id="resetCamBtn" type="button">Kamerayı Sıfırla</button>
+    <button id="sideLeaveBtn" type="button" style="display:none; color:#ff7777;">Odadan Çık</button>
   </div>
 
   <div id="deathOverlay">
@@ -183,6 +184,7 @@
     const playerCountTextSide = document.getElementById("playerCountTextSide");
     const spectateHint = document.getElementById("spectateHint");
     const resetCamBtn = document.getElementById("resetCamBtn");
+    const sideLeaveBtn = document.getElementById("sideLeaveBtn");
     const leaveRoomBtn = document.getElementById("leaveRoomBtn");
     const logBox = document.getElementById("logBox");
     const startBtn = document.getElementById("startBtn");
@@ -282,6 +284,12 @@
       location.reload();
     };
 
+    sideLeaveBtn.onclick = () => {
+      roomId = "";
+      socket.disconnect();
+      location.reload();
+    };
+
     resetCamBtn.onclick = () => {
       if (!gameState || !isSpectating()) return;
       specCamX = Math.max(0, Math.min(gameState.map.w - vw, gameState.map.w * 0.5 - vw * 0.5));
@@ -336,6 +344,7 @@
       const nowSpectating = isSpectating();
       spectateText.style.display = nowSpectating ? "block" : "none";
       resetCamBtn.style.display = nowSpectating ? "inline-block" : "none";
+      sideLeaveBtn.style.display = nowSpectating ? "inline-block" : "none";
       if (nowSpectating && !wasSpectating) {
         specCamX = Math.max(0, Math.min(state.map.w - vw, state.map.w * 0.5 - vw * 0.5));
         specCamY = Math.max(0, Math.min(state.map.h - vh, state.map.h * 0.5 - vh * 0.5));
@@ -501,7 +510,8 @@
 
     function drawFog() {
       const me = myPlayer();
-      if (!me || !me.alive || gameState?.status !== "running") return;
+      if (!me || gameState?.status !== "running") return;
+      if (!me.alive) return;
       const px = me.x - camX;
       const py = me.y - camY;
       const grad = ctx.createRadialGradient(px, py, VIEW_R * 0.45, px, py, VIEW_R * 1.1);

@@ -64,34 +64,55 @@ function buildMap() {
   walls.push({ x: 0, y: 0, w: WALL_T, h: MAP_H });
   walls.push({ x: MAP_W - WALL_T, y: 0, w: WALL_T, h: MAP_H });
 
-  const cols = 6;
-  const rows = 6;
+  const cols = 7;
+  const rows = 7;
   const cW = (MAP_W - 60) / cols;
   const cH = (MAP_H - 60) / rows;
   for (let row = 0; row < rows; row += 1) {
     for (let col = 0; col < cols; col += 1) {
       const cx = 30 + col * cW + cW / 2;
       const cy = 30 + row * cH + cH / 2;
-      const rw = 160 + Math.round(Math.random() * 120);
-      const rh = 140 + Math.round(Math.random() * 110);
-      const rx = cx - rw / 2;
-      const ry = cy - rh / 2;
-      const dw = 44;
-      const dtx = rx + rw / 2 - dw / 2;
-      walls.push({ x: rx, y: ry, w: Math.max(0, dtx - rx), h: WALL_T });
-      walls.push({ x: dtx + dw, y: ry, w: Math.max(0, rx + rw - dtx - dw), h: WALL_T });
-      walls.push({ x: rx, y: ry + rh - WALL_T, w: Math.max(0, dtx - rx), h: WALL_T });
-      walls.push({ x: dtx + dw, y: ry + rh - WALL_T, w: Math.max(0, rx + rw - dtx - dw), h: WALL_T });
-      const dly = ry + rh / 2 - dw / 2;
-      walls.push({ x: rx, y: ry, w: WALL_T, h: Math.max(0, dly - ry) });
-      walls.push({ x: rx, y: dly + dw, w: WALL_T, h: Math.max(0, ry + rh - dly - dw) });
-      walls.push({ x: rx + rw - WALL_T, y: ry, w: WALL_T, h: Math.max(0, dly - ry) });
-      walls.push({ x: rx + rw - WALL_T, y: dly + dw, w: WALL_T, h: Math.max(0, ry + rh - dly - dw) });
+      const rw = 120 + Math.round(Math.random() * 160);
+      const rh = 100 + Math.round(Math.random() * 140);
+      const rx = Math.max(WALL_T + 20, Math.min(MAP_W - WALL_T - 20, cx - rw / 2));
+      const ry = Math.max(WALL_T + 20, Math.min(MAP_H - WALL_T - 20, cy - rh / 2));
+      const dw = 40 + Math.round(Math.random() * 20);
+      const dh = 40 + Math.round(Math.random() * 20);
+      const doorSide = Math.floor(Math.random() * 4);
+      
+      let dtx, qty, d_y, drx, dry;
+      if (doorSide === 0) {
+        dtx = rx + rw / 2 - dw / 2;
+        qty = ry;
+        walls.push({ x: rx, y: ry, w: Math.max(0, dtx - rx), h: WALL_T });
+        walls.push({ x: dtx + dw, y: ry, w: Math.max(0, rx + rw - dtx - dw), h: WALL_T });
+        walls.push({ x: rx, y: ry + rh - WALL_T, w: rw, h: WALL_T });
+      } else if (doorSide === 1) {
+        qty = ry + rh / 2 - dh / 2;
+        drx = rx + rw - WALL_T;
+        walls.push({ x: rx, y: ry, w: rw, h: WALL_T });
+        walls.push({ x: rx, y: ry + rh - WALL_T, w: rw, h: WALL_T });
+        walls.push({ x: rx, y: ry, w: WALL_T, h: Math.max(0, qty - ry) });
+        walls.push({ x: rx, y: qty + dh, w: WALL_T, h: Math.max(0, ry + rh - qty - dh) });
+      } else if (doorSide === 2) {
+        dtx = rx + rw / 2 - dw / 2;
+        walls.push({ x: rx, y: ry, w: rw, h: WALL_T });
+        walls.push({ x: rx, y: ry + rh - WALL_T, w: Math.max(0, dtx - rx), h: WALL_T });
+        walls.push({ x: dtx + dw, y: ry + rh - WALL_T, w: Math.max(0, rx + rw - dtx - dw), h: WALL_T });
+      } else {
+        qty = ry + rh / 2 - dh / 2;
+        walls.push({ x: rx, y: ry, w: rw, h: WALL_T });
+        walls.push({ x: rx, y: ry + rh - WALL_T, w: rw, h: WALL_T });
+        walls.push({ x: rx + rw - WALL_T, y: ry, w: WALL_T, h: Math.max(0, qty - ry) });
+        walls.push({ x: rx + rw - WALL_T, y: qty + dh, w: WALL_T, h: Math.max(0, ry + rh - qty - dh) });
+      }
+      walls.push({ x: rx, y: ry, w: WALL_T, h: rh });
+      walls.push({ x: rx + rw - WALL_T, y: ry, w: WALL_T, h: rh });
     }
   }
 
   return walls.filter((w) => w.w > 0 && w.h > 0);
-}
+
 
 function circleRectOverlap(x, y, radius, rect) {
   const nearestX = Math.max(rect.x, Math.min(x, rect.x + rect.w));
