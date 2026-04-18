@@ -161,6 +161,7 @@
     let myId = "";
     let hostId = "";
     let gameState = null;
+    let deathOverlayDismissed = false;
     let camX = 0;
     let camY = 0;
     let specCamX = 0;
@@ -307,6 +308,7 @@
       camX = specCamX;
       camY = specCamY;
       deathOverlay.style.display = "none";
+      deathOverlayDismissed = true;
     };
 
     socket.on("connect", () => {
@@ -333,9 +335,13 @@
       roleTextSide.textContent = roleText.textContent;
       aliveTextSide.textContent = aliveText.textContent;
       overlay.style.display = roomId ? "none" : "flex";
-      deathOverlay.style.display = isSpectating() ? "flex" : "none";
-      logText.innerHTML = state.logs.map((l) => `- ${l.text}`).join("<br />") || "Log yok";
-      spectateHint.style.display = isSpectating() ? "block" : "none";
+      if (isSpectating()) {
+        deathOverlay.style.display = deathOverlayDismissed ? "none" : "flex";
+      } else {
+        deathOverlay.style.display = "none";
+        deathOverlayDismissed = false;
+      }
+      logText.innerHTML = state.logs.map((l) => `- ${l.text}`).join("<br />") || "Log yok";      spectateHint.style.display = isSpectating() ? "block" : "none";
       if (state.status === "lobby") {
         if (state.players.length < state.capacity) {
           const missing = state.capacity - state.players.length;

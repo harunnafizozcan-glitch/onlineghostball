@@ -93,97 +93,97 @@ function buildMap() {
 
   const rooms = [
     { x: 294, y: 444, w: 620, h: 520, doors: [
-      { side: 'right', start: 260, end: 340 },
-      { side: 'bottom', start: 260, end: 340 }
+      { side: 'right', start: 200, end: 400 },
+      { side: 'bottom', start: 200, end: 400 }
     ] },
     { x: 1174, y: 444, w: 620, h: 520, doors: [
-      { side: 'left', start: 260, end: 340 },
-      { side: 'right', start: 260, end: 340 },
-      { side: 'bottom', start: 260, end: 340 }
+      { side: 'left', start: 200, end: 400 },
+      { side: 'right', start: 200, end: 400 },
+      { side: 'bottom', start: 200, end: 400 }
     ] },
     { x: 2054, y: 444, w: 620, h: 520, doors: [
-      { side: 'left', start: 260, end: 340 },
-      { side: 'bottom', start: 260, end: 340 }
+      { side: 'left', start: 200, end: 400 },
+      { side: 'bottom', start: 200, end: 400 }
     ] },
     { x: 294, y: 1224, w: 620, h: 520, doors: [
-      { side: 'top', start: 260, end: 340 },
-      { side: 'right', start: 260, end: 340 },
-      { side: 'bottom', start: 260, end: 340 }
+      { side: 'top', start: 200, end: 400 },
+      { side: 'right', start: 200, end: 400 },
+      { side: 'bottom', start: 200, end: 400 }
     ] },
     { x: 1174, y: 1224, w: 620, h: 520, doors: [
-      { side: 'top', start: 260, end: 340 },
-      { side: 'left', start: 260, end: 340 },
-      { side: 'right', start: 260, end: 340 },
-      { side: 'bottom', start: 260, end: 340 }
+      { side: 'top', start: 200, end: 400 },
+      { side: 'left', start: 200, end: 400 },
+      { side: 'right', start: 200, end: 400 },
+      { side: 'bottom', start: 200, end: 400 }
     ] },
     { x: 2054, y: 1224, w: 620, h: 520, doors: [
-      { side: 'top', start: 260, end: 340 },
-      { side: 'left', start: 260, end: 340 },
-      { side: 'bottom', start: 260, end: 340 }
+      { side: 'top', start: 200, end: 400 },
+      { side: 'left', start: 200, end: 400 },
+      { side: 'bottom', start: 200, end: 400 }
     ] },
     { x: 294, y: 2004, w: 620, h: 520, doors: [
-      { side: 'top', start: 260, end: 340 },
-      { side: 'right', start: 260, end: 340 }
+      { side: 'top', start: 200, end: 400 },
+      { side: 'right', start: 200, end: 400 }
     ] },
     { x: 1174, y: 2004, w: 620, h: 520, doors: [
-      { side: 'top', start: 260, end: 340 },
-      { side: 'left', start: 260, end: 340 },
-      { side: 'right', start: 260, end: 340 }
+      { side: 'top', start: 200, end: 400 },
+      { side: 'left', start: 200, end: 400 },
+      { side: 'right', start: 200, end: 400 }
     ] },
     { x: 2054, y: 2004, w: 620, h: 520, doors: [
-      { side: 'top', start: 260, end: 340 },
-      { side: 'left', start: 260, end: 340 }
+      { side: 'top', start: 200, end: 400 },
+      { side: 'left', start: 200, end: 400 }
     ] }
   ];
 
   const corridors = [
     { x: 914, y: 564, w: 260, h: 280, doors: [
-      { side: 'left', start: 140, end: 220 },
-      { side: 'right', start: 140, end: 220 }
+      { side: 'left', start: 80, end: 260 },
+      { side: 'right', start: 80, end: 260 }
     ] },
     { x: 1794, y: 564, w: 260, h: 280, doors: [
-      { side: 'left', start: 140, end: 220 },
-      { side: 'right', start: 140, end: 220 }
+      { side: 'left', start: 80, end: 260 },
+      { side: 'right', start: 80, end: 260 }
     ] },
     { x: 914, y: 1344, w: 260, h: 280, doors: [
-      { side: 'left', start: 140, end: 220 },
-      { side: 'right', start: 140, end: 220 }
+      { side: 'left', start: 80, end: 260 },
+      { side: 'right', start: 80, end: 260 }
     ] },
     { x: 1794, y: 1344, w: 260, h: 280, doors: [
-      { side: 'left', start: 140, end: 220 },
-      { side: 'right', start: 140, end: 220 }
+      { side: 'left', start: 80, end: 260 },
+      { side: 'right', start: 80, end: 260 }
     ] },
     { x: 914, y: 2144, w: 260, h: 280, doors: [
-      { side: 'left', start: 140, end: 220 },
-      { side: 'right', start: 140, end: 220 }
+      { side: 'left', start: 80, end: 260 },
+      { side: 'right', start: 80, end: 260 }
     ] },
     { x: 1794, y: 2144, w: 260, h: 280, doors: [
-      { side: 'left', start: 140, end: 220 },
-      { side: 'right', start: 140, end: 220 }
+      { side: 'left', start: 80, end: 260 },
+      { side: 'right', start: 80, end: 260 }
     ] },
     { x: 414, y: 964, w: 280, h: 260, doors: [
-      { side: 'top', start: 140, end: 220 },
-      { side: 'bottom', start: 140, end: 220 }
+      { side: 'top', start: 80, end: 260 },
+      { side: 'bottom', start: 80, end: 260 }
     ] },
     { x: 1294, y: 964, w: 280, h: 260, doors: [
-      { side: 'top', start: 140, end: 220 },
-      { side: 'bottom', start: 140, end: 220 }
+      { side: 'top', start: 80, end: 260 },
+      { side: 'bottom', start: 80, end: 260 }
     ] },
     { x: 2174, y: 964, w: 280, h: 260, doors: [
-      { side: 'top', start: 140, end: 220 },
-      { side: 'bottom', start: 140, end: 220 }
+      { side: 'top', start: 80, end: 260 },
+      { side: 'bottom', start: 80, end: 260 }
     ] },
     { x: 414, y: 1744, w: 280, h: 260, doors: [
-      { side: 'top', start: 140, end: 220 },
-      { side: 'bottom', start: 140, end: 220 }
+      { side: 'top', start: 80, end: 260 },
+      { side: 'bottom', start: 80, end: 260 }
     ] },
     { x: 1294, y: 1744, w: 280, h: 260, doors: [
-      { side: 'top', start: 140, end: 220 },
-      { side: 'bottom', start: 140, end: 220 }
+      { side: 'top', start: 80, end: 260 },
+      { side: 'bottom', start: 80, end: 260 }
     ] },
     { x: 2174, y: 1744, w: 280, h: 260, doors: [
-      { side: 'top', start: 140, end: 220 },
-      { side: 'bottom', start: 140, end: 220 }
+      { side: 'top', start: 80, end: 260 },
+      { side: 'bottom', start: 80, end: 260 }
     ] }
   ];
 
