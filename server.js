@@ -64,52 +64,76 @@ function buildMap() {
   walls.push({ x: 0, y: 0, w: WALL_T, h: MAP_H });
   walls.push({ x: MAP_W - WALL_T, y: 0, w: WALL_T, h: MAP_H });
 
-  const cols = 7;
-  const rows = 7;
-  const cW = (MAP_W - 60) / cols;
-  const cH = (MAP_H - 60) / rows;
-  for (let row = 0; row < rows; row += 1) {
-    for (let col = 0; col < cols; col += 1) {
-      const cx = 30 + col * cW + cW / 2;
-      const cy = 30 + row * cH + cH / 2;
-      const rw = 120 + Math.round(Math.random() * 160);
-      const rh = 100 + Math.round(Math.random() * 140);
-      const rx = Math.max(WALL_T + 20, Math.min(MAP_W - WALL_T - 20, cx - rw / 2));
-      const ry = Math.max(WALL_T + 20, Math.min(MAP_H - WALL_T - 20, cy - rh / 2));
-      const dw = 40 + Math.round(Math.random() * 20);
-      const dh = 40 + Math.round(Math.random() * 20);
-      const doorSide = Math.floor(Math.random() * 4);
-      
-      let dtx, qty, d_y, drx, dry;
-      if (doorSide === 0) {
-        dtx = rx + rw / 2 - dw / 2;
-        qty = ry;
-        walls.push({ x: rx, y: ry, w: Math.max(0, dtx - rx), h: WALL_T });
-        walls.push({ x: dtx + dw, y: ry, w: Math.max(0, rx + rw - dtx - dw), h: WALL_T });
-        walls.push({ x: rx, y: ry + rh - WALL_T, w: rw, h: WALL_T });
-      } else if (doorSide === 1) {
-        qty = ry + rh / 2 - dh / 2;
-        drx = rx + rw - WALL_T;
-        walls.push({ x: rx, y: ry, w: rw, h: WALL_T });
-        walls.push({ x: rx, y: ry + rh - WALL_T, w: rw, h: WALL_T });
-        walls.push({ x: rx, y: ry, w: WALL_T, h: Math.max(0, qty - ry) });
-        walls.push({ x: rx, y: qty + dh, w: WALL_T, h: Math.max(0, ry + rh - qty - dh) });
-      } else if (doorSide === 2) {
-        dtx = rx + rw / 2 - dw / 2;
-        walls.push({ x: rx, y: ry, w: rw, h: WALL_T });
-        walls.push({ x: rx, y: ry + rh - WALL_T, w: Math.max(0, dtx - rx), h: WALL_T });
-        walls.push({ x: dtx + dw, y: ry + rh - WALL_T, w: Math.max(0, rx + rw - dtx - dw), h: WALL_T });
+  const rooms = [
+    { x: 200, y: 200, w: 400, h: 350, name: "oda1" },
+    { x: 1400, y: 200, w: 400, h: 350, name: "oda2" },
+    { x: 2500, y: 250, w: 350, h: 300, name: "oda3" },
+    { x: 200, y: 800, w: 450, h: 380, name: "oda4" },
+    { x: 1200, y: 900, w: 500, h: 400, name: "oda5" },
+    { x: 2400, y: 1000, w: 380, h: 350, name: "oda6" },
+    { x: 300, y: 1800, w: 420, h: 360, name: "oda7" },
+    { x: 1500, y: 1900, w: 450, h: 350, name: "oda8" },
+    { x: 2350, y: 1850, w: 380, h: 380, name: "oda9" }
+  ];
+
+  const buildRoom = (room) => {
+    walls.push({ x: room.x, y: room.y, w: room.w, h: WALL_T });
+    walls.push({ x: room.x, y: room.y + room.h - WALL_T, w: room.w, h: WALL_T });
+    walls.push({ x: room.x, y: room.y, w: WALL_T, h: room.h });
+    walls.push({ x: room.x + room.w - WALL_T, y: room.y, w: WALL_T, h: room.h });
+    
+    const doorW = 35;
+    const doorSides = [0, 1, 2, 3].sort(() => Math.random() - 0.5).slice(0, 1 + Math.floor(Math.random() * 2));
+    
+    doorSides.forEach((side) => {
+      if (side === 0) {
+        const dx = room.x + WALL_T + Math.random() * (room.w - 2 * WALL_T - doorW);
+        walls.push({ x: room.x, y: room.y, w: Math.max(0, dx - room.x), h: WALL_T });
+        walls.push({ x: dx + doorW, y: room.y, w: Math.max(0, room.x + room.w - dx - doorW), h: WALL_T });
+      } else if (side === 1) {
+        const dy = room.y + WALL_T + Math.random() * (room.h - 2 * WALL_T - doorW);
+        walls.push({ x: room.x + room.w - WALL_T, y: room.y, w: WALL_T, h: Math.max(0, dy - room.y) });
+        walls.push({ x: room.x + room.w - WALL_T, y: dy + doorW, w: WALL_T, h: Math.max(0, room.y + room.h - dy - doorW) });
+      } else if (side === 2) {
+        const dx = room.x + room.w - WALL_T - Math.random() * (room.w - 2 * WALL_T - doorW);
+        walls.push({ x: room.x, y: room.y + room.h - WALL_T, w: Math.max(0, dx - room.x), h: WALL_T });
+        walls.push({ x: dx + doorW, y: room.y + room.h - WALL_T, w: Math.max(0, room.x + room.w - dx - doorW), h: WALL_T });
       } else {
-        qty = ry + rh / 2 - dh / 2;
-        walls.push({ x: rx, y: ry, w: rw, h: WALL_T });
-        walls.push({ x: rx, y: ry + rh - WALL_T, w: rw, h: WALL_T });
-        walls.push({ x: rx + rw - WALL_T, y: ry, w: WALL_T, h: Math.max(0, qty - ry) });
-        walls.push({ x: rx + rw - WALL_T, y: qty + dh, w: WALL_T, h: Math.max(0, ry + rh - qty - dh) });
+        const dy = room.y + room.h - WALL_T - Math.random() * (room.h - 2 * WALL_T - doorW);
+        walls.push({ x: room.x, y: room.y, w: WALL_T, h: Math.max(0, dy - room.y) });
+        walls.push({ x: room.x, y: dy + doorW, w: WALL_T, h: Math.max(0, room.y + room.h - dy - doorW) });
       }
-      walls.push({ x: rx, y: ry, w: WALL_T, h: rh });
-      walls.push({ x: rx + rw - WALL_T, y: ry, w: WALL_T, h: rh });
+    });
+  };
+
+  rooms.forEach(buildRoom);
+
+  const connections = [
+    [0, 1], [1, 2], [0, 3], [1, 4], [2, 5], [3, 4], [4, 5],
+    [3, 6], [4, 7], [5, 8], [6, 7], [7, 8]
+  ];
+
+  const buildCorridor = (r1, r2) => {
+    const c1x = r1.x + r1.w / 2;
+    const c1y = r1.y + r1.h / 2;
+    const c2x = r2.x + r2.w / 2;
+    const c2y = r2.y + r2.h / 2;
+    const corrW = 60;
+    
+    if (Math.abs(c1x - c2x) > Math.abs(c1y - c2y)) {
+      const x1 = Math.min(c1x, c2x);
+      const x2 = Math.max(c1x, c2x);
+      const y = c1y - corrW / 2;
+      walls.push({ x: x1, y: y, w: x2 - x1, h: corrW });
+    } else {
+      const y1 = Math.min(c1y, c2y);
+      const y2 = Math.max(c1y, c2y);
+      const x = c1x - corrW / 2;
+      walls.push({ x: x, y: y1, w: corrW, h: y2 - y1 });
     }
-  }
+  };
+
+  connections.forEach(([i, j]) => buildCorridor(rooms[i], rooms[j]));
 
   return walls.filter((w) => w.w > 0 && w.h > 0);
 
