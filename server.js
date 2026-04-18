@@ -477,6 +477,17 @@ setInterval(() => {
           }
         });
         if (closestDist < PLAYER_R * 3) {
+          let victimId = null;
+          let victim = null;
+          room.players.forEach((op, oid) => {
+            if (oid === id || !op.alive) return;
+            const d = Math.hypot(p.x - op.x, p.y - op.y);
+            if (d < PLAYER_R * 2.4) {
+              victimId = oid;
+              victim = op;
+            }
+          });
+          if (!victimId) return;
           // Check for witness
           let hasWitness = false;
           room.players.forEach((witness, wid) => {
@@ -485,7 +496,6 @@ setInterval(() => {
             if (wd < PLAYER_R * 4) hasWitness = true;
           });
           if (!hasWitness) {
-            // Attack
             killPlayer(room, victimId, id);
           }
           return;
