@@ -47,7 +47,9 @@
       border-radius: 8px; padding: 10px;
     }
     #topUi { top: 12px; z-index: 4; line-height: 1.7; min-width: 230px; }
-    #logBox { bottom: 12px; max-width: 420px; z-index: 4; color: #bac6f0; }
+    #logBox { bottom: 12px; max-width: 420px; z-index: 4; color: #bac6f0; display: flex; flex-direction: column; gap: 8px; }
+    #logBox button { align-self: flex-end; padding: 6px 10px; font-size: 12px; }
+    #logText { line-height: 1.5; }
     #crosshair {
       position: fixed; width: 18px; height: 18px; border: 2px solid #ffe45d; border-radius: 50%;
       transform: translate(-50%, -50%); pointer-events: none; display: none; z-index: 6;
@@ -73,7 +75,7 @@
   </div>
 
   <div id="logBox">
-    Log bekleniyor...
+    <div id="logText">Log bekleniyor...</div>
     <button id="fillBotsLogBtn" type="button">Botlarla Doldur</button>
   </div>
 
@@ -145,6 +147,7 @@
     const roomInput = document.getElementById("roomInput");
     const openRoomsList = document.getElementById("openRoomsList");
     const refreshRoomsBtn = document.getElementById("refreshRoomsBtn");
+    const logText = document.getElementById("logText");
     let openRooms = [];
 
     function setStatus(text, color = "#8ea2ff") {
@@ -247,7 +250,7 @@
       roleText.textContent = me?.role ? me.role.toUpperCase() : "-";
       roleText.style.color = me?.role === "katil" ? "#ff5d5d" : (me?.role === "serif" ? "#ffe05d" : "#8dff95");
       overlay.style.display = roomId ? "none" : "flex";
-      logBox.innerHTML = state.logs.map((l) => `- ${l.text}`).join("<br />") || "Log yok";
+      logText.innerHTML = state.logs.map((l) => `- ${l.text}`).join("<br />") || "Log yok";
       if (state.status === "lobby") {
         if (state.players.length < state.capacity) {
           const missing = state.capacity - state.players.length;
