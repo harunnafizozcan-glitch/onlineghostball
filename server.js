@@ -677,6 +677,7 @@ setInterval(() => {
         if (Math.hypot(p.x - b.x, p.y - b.y) <= PLAYER_R) {
           killPlayer(room, id, b.shooter);
           hit = true;
+          broadcastRoom(room);
         }
       });
       if (hit) room.bullets.splice(i, 1);

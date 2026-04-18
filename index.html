@@ -299,7 +299,7 @@
       hostId = state.hostSocketId;
       const wasSpectating = isSpectating();
       phaseText.textContent = state.status;
-      aliveText.textContent = state.players.filter((p) => p.alive).length;
+      aliveText.textContent = String(state.players.filter((p) => p.alive).length);
       playerCountText.textContent = `${state.players.length}/${state.capacity}`;
       startBtn.disabled = state.players.length < state.capacity || state.hostSocketId !== myId;
       fillBotsBtn.disabled = state.players.length >= state.capacity || state.hostSocketId !== myId;
