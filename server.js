@@ -163,7 +163,13 @@ function buildMap() {
   const addBox = (rect) => {
     const openings = rect.doors || [];
     const sides = { top: [], bottom: [], left: [], right: [] };
-    openings.forEach((door) => sides[door.side].push([door.start, door.end]));
+    openings.forEach((door) => {
+      if (door.side === 'top' || door.side === 'bottom') {
+        sides[door.side].push([rect.x + door.start, rect.x + door.end]);
+      } else {
+        sides[door.side].push([rect.y + door.start, rect.y + door.end]);
+      }
+    });
     const addSegment = (x, y, w, h) => {
       if (w > 0 && h > 0) walls.push({ x, y, w, h });
     };
