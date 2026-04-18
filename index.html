@@ -79,13 +79,13 @@
       <h1>GHOST BALL ONLINE</h1>
       <p style="color:#b5c0ea; margin-bottom:14px;">Host oda kurar, digerleri kodla katilir. Host "Maci Baslat" ile oyunu acsin.</p>
       <div class="row"><input id="nameInput" maxlength="14" placeholder="Oyuncu adi" /></div>
+      <div class="row"><label style="color:#b5c0ea;"><input type="checkbox" id="autoFillBots"> Botlarla doldur</label></div>
       <div class="row">
         <button id="createBtn">Oda Kur</button>
         <input id="roomInput" maxlength="5" placeholder="Oda Kodu" />
         <button id="joinBtn">Katil</button>
       </div>
       <div class="row">
-        <button id="fillBotsBtn">Botlarla Doldur</button>
         <button id="startBtn" disabled>Oda Dolunca Baslar</button>
       </div>
       <p style="color:#9aa8dd; margin-top:6px;">Kontroller: WASD hareket, <b>Space</b> yakin oldur (katil), <b>Tik</b> ates (serif, 5sn cooldown).</p>
@@ -136,7 +136,6 @@
     const playerCountText = document.getElementById("playerCountText");
     const logBox = document.getElementById("logBox");
     const startBtn = document.getElementById("startBtn");
-    const fillBotsBtn = document.getElementById("fillBotsBtn");
     const nameInput = document.getElementById("nameInput");
     const roomInput = document.getElementById("roomInput");
     const openRoomsList = document.getElementById("openRoomsList");
@@ -191,7 +190,8 @@
 
     document.getElementById("createBtn").onclick = () => {
       const name = nameInput.value.trim() || "Oyuncu";
-      socket.emit("createRoom", { name }, (res) => {
+      const autoFill = document.getElementById("autoFillBots").checked;
+      socket.emit("createRoom", { name, autoFill }, (res) => {
         if (!res?.ok) return setStatus("Oda olusturulamadi.", "#ff8e8e");
         connectOk(res.roomId);
       });
@@ -214,11 +214,6 @@
       socket.emit("startMatch", { roomId });
     };
 
-    fillBotsBtn.onclick = () => {
-      if (!roomId) return;
-      socket.emit("fillWithBots", { roomId });
-    };
-
     socket.on("connect", () => {
       myId = socket.id;
       setStatus("Sunucuya baglandi.");
@@ -231,7 +226,6 @@
       aliveText.textContent = state.players.filter((p) => p.alive).length;
       playerCountText.textContent = `${state.players.length}/${state.capacity}`;
       startBtn.disabled = state.players.length < state.capacity || state.hostSocketId !== myId;
-      fillBotsBtn.disabled = state.players.length >= state.capacity || state.hostSocketId !== myId;
       const me = myPlayer();
       roleText.textContent = me?.role ? me.role.toUpperCase() : "-";
       roleText.style.color = me?.role === "katil" ? "#ff5d5d" : (me?.role === "serif" ? "#ffe05d" : "#8dff95");
