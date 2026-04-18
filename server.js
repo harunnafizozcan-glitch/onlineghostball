@@ -337,6 +337,31 @@ io.on("connection", (socket) => {
     broadcastOpenRooms();
   });
 
+  socket.on("fillWithBots", ({ roomId }) => {
+    const room = rooms.get((roomId || "").toUpperCase());
+    if (!room || room.hostSocketId !== socket.id || room.status !== "lobby") return;
+    let botCount = 1;
+    while (room.players.size < room.capacity) {
+      const botId = `bot${botCount++}`;
+      const idx = room.players.size % COLORS.length;
+      const sp = spawnPosition(room);
+      room.players.set(botId, {
+        name: `Bot${botCount - 1}`,
+        color: COLORS[idx],
+        x: sp.x,
+        y: sp.y,
+        role: null,
+        alive: true,
+        input: { up: false, down: false, left: false, right: false },
+        lastShotAt: 0,
+        isBot: true
+      });
+    }
+    tryAutoStartIfFull(room);
+    broadcastRoom(room);
+    broadcastOpenRooms();
+  });
+
   socket.on("requestOpenRooms", () => {
     socket.emit("openRooms", openRoomsSnapshot());
   });
@@ -425,6 +450,113 @@ setInterval(() => {
         p.y += n.y * PLAYER_SPEED;
       }
       resolveWalls(room, p);
+    });
+
+    // Bot AI
+    room.players.forEach((p, id) => {
+      if (!p.isBot || !p.alive) return;
+      let targetX = p.x;
+      let targetY = p.y;
+      if (p.role === "katil") {
+        // Killer: move towards closest alive non-killer
+        let closestDist = Infinity;
+        room.players.forEach((other, oid) => {
+          if (oid === id || !other.alive || other.role === "katil") return;
+          const d = Math.hypot(p.x - other.x, p.y - other.y);
+          if (d < closestDist) {
+            closestDist = d;
+            targetX = other.x;
+            targetY = other.y;
+          }
+        });
+        if (closestDist < PLAYER_R * 3) {
+          // Check for witness
+          let hasWitness = false;
+          room.players.forEach((witness, wid) => {
+            if (wid === id || wid === victimId || !witness.alive) return;
+            const wd = Math.hypot(victim.x - witness.x, victim.y - witness.y);
+            if (wd < PLAYER_R * 4) hasWitness = true;
+          });
+          if (!hasWitness) {
+            // Attack
+            killPlayer(room, victimId, id);
+          }
+          return;
+        }
+      } else if (p.role === "masum") {
+        // Innocent: random movement, avoid walls
+        if (Math.random() < 0.02) { // Change direction occasionally
+          const dir = Math.floor(Math.random() * 4);
+          p.input = { up: dir === 0, down: dir === 1, left: dir === 2, right: dir === 3 };
+        }
+        // If stuck, try to get out
+        const oldX = p.x;
+        const oldY = p.y;
+        const dx = (p.input.right ? 1 : 0) - (p.input.left ? 1 : 0);
+        const dy = (p.input.down ? 1 : 0) - (p.input.up ? 1 : 0);
+        if (dx !== 0 || dy !== 0) {
+          const n = normalize(dx, dy);
+          p.x += n.x * PLAYER_SPEED;
+          p.y += n.y * PLAYER_SPEED;
+        }
+        resolveWalls(room, p);
+        if (Math.hypot(p.x - oldX, p.y - oldY) < 1) {
+          // Stuck, change direction
+          const dir = Math.floor(Math.random() * 4);
+          p.input = { up: dir === 0, down: dir === 1, left: dir === 2, right: dir === 3 };
+        }
+        return;
+      } else if (p.role === "serif") {
+        // Sheriff: pick up gun if near, shoot at suspected killer
+        // First, check for gun pickup
+        for (let i = room.gunPickups.length - 1; i >= 0; i -= 1) {
+          const g = room.gunPickups[i];
+          if (Math.hypot(p.x - g.x, p.y - g.y) < 30) {
+            p.role = "serif";
+            p.lastShotAt = 0;
+            room.gunPickups.splice(i, 1);
+            addLog(room, `${p.name} tabancayi aldi, yeni serif oldu.`);
+          }
+        }
+        // Suspect killer: find the killer
+        let killerId = null;
+        room.players.forEach((other, oid) => {
+          if (other.role === "katil" && other.alive) killerId = oid;
+        });
+        if (killerId) {
+          const killer = room.players.get(killerId);
+          targetX = killer.x;
+          targetY = killer.y;
+          // If close, shoot
+          const d = Math.hypot(p.x - killer.x, p.y - killer.y);
+          if (d < 150 && Date.now() - p.lastShotAt >= SHERIFF_COOLDOWN) {
+            const angle = Math.atan2(killer.y - p.y, killer.x - p.x);
+            p.lastShotAt = Date.now();
+            room.bullets.push({
+              x: p.x,
+              y: p.y,
+              vx: Math.cos(angle) * BULLET_SPEED,
+              vy: Math.sin(angle) * BULLET_SPEED,
+              shooter: id,
+              bornAt: Date.now()
+            });
+          }
+        }
+      }
+      // Move towards target
+      const dx = targetX - p.x;
+      const dy = targetY - p.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 10) {
+        p.input = {
+          up: dy < 0,
+          down: dy > 0,
+          left: dx < 0,
+          right: dx > 0
+        };
+      } else {
+        p.input = { up: false, down: false, left: false, right: false };
+      }
     });
 
     for (let i = room.gunPickups.length - 1; i >= 0; i -= 1) {
