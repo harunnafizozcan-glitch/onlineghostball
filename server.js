@@ -819,7 +819,6 @@ setInterval(() => {
           p.role = "serif";
           p.lastShotAt = 0;
           room.gunPickups.splice(i, 1);
-          addLog(room, `${p.name} tabancayi aldi, yeni serif oldu.`);
           picked = true;
         }
       });
