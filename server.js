@@ -136,7 +136,7 @@ function buildMap() {
   connections.forEach(([i, j]) => buildCorridor(rooms[i], rooms[j]));
 
   return walls.filter((w) => w.w > 0 && w.h > 0);
-
+}
 
 function circleRectOverlap(x, y, radius, rect) {
   const nearestX = Math.max(rect.x, Math.min(x, rect.x + rect.w));
