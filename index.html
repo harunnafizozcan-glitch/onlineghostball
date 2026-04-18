@@ -99,15 +99,15 @@
     <div>Rol: <span id="roleTextSide">-</span></div>
     <div>Canli: <span id="aliveTextSide">0</span></div>
     <div id="spectateHint" style="display:none; color:#ffd47e;">Öldün. WASD ile kamerayı hareket ettir.</div>
-    <button id="resetCamBtn" type="button">Kamerayı Sıfırla</button>
-    <button id="sideLeaveBtn" type="button" style="display:none; color:#ff7777;">Odadan Çık</button>
+    <button id="resetCamBtn" type="button">Haritayı İzle</button>
+    <button id="sideLeaveBtn" type="button" style="display:none; color:#ff7777;">Çık</button>
   </div>
 
   <div id="deathOverlay">
     <div id="deathCard">
       <h2>ÖLDÜN</h2>
       <p>Oyundan elendİn. Haritayı izleyebilirsin veya odadan ayrılabilirsin.</p>
-      <button id="leaveRoomBtn" type="button">Odadan Ayrıl</button>
+      <button id="leaveRoomBtn" type="button">Çık</button>
     </div>
   </div>
 
@@ -435,10 +435,10 @@
         const sx = w.x - camX;
         const sy = w.y - camY;
         if (sx > vw || sy > vh || sx + w.w < 0 || sy + w.h < 0) continue;
-        ctx.fillStyle = "#23263a";
+        ctx.fillStyle = "#2a3050";
         ctx.fillRect(sx, sy, w.w, w.h);
-        ctx.strokeStyle = "#3c4469";
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = "#5a7aff";
+        ctx.lineWidth = 2;
         ctx.strokeRect(sx, sy, w.w, w.h);
       }
     }
