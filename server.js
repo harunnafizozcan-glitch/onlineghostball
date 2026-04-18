@@ -65,38 +65,98 @@ function buildMap() {
   walls.push({ x: MAP_W - WALL_T, y: 0, w: WALL_T, h: MAP_H });
 
   const rooms = [
-    { x: 180, y: 180, w: 420, h: 320, doors: [
-      { side: 'right', start: 120, end: 160 },
-      { side: 'bottom', start: 170, end: 210 }
+    { x: 120, y: 120, w: 620, h: 520, doors: [
+      { side: 'right', start: 260, end: 340 },
+      { side: 'bottom', start: 260, end: 340 }
     ] },
-    { x: 2100, y: 180, w: 420, h: 320, doors: [
-      { side: 'left', start: 120, end: 160 },
-      { side: 'bottom', start: 170, end: 210 }
+    { x: 1000, y: 120, w: 620, h: 520, doors: [
+      { side: 'left', start: 260, end: 340 },
+      { side: 'right', start: 260, end: 340 },
+      { side: 'bottom', start: 260, end: 340 }
     ] },
-    { x: 180, y: 1480, w: 420, h: 320, doors: [
-      { side: 'right', start: 120, end: 160 },
-      { side: 'top', start: 170, end: 210 }
+    { x: 1880, y: 120, w: 620, h: 520, doors: [
+      { side: 'left', start: 260, end: 340 },
+      { side: 'bottom', start: 260, end: 340 }
     ] },
-    { x: 2100, y: 1480, w: 420, h: 320, doors: [
-      { side: 'left', start: 120, end: 160 },
-      { side: 'top', start: 170, end: 210 }
+    { x: 120, y: 900, w: 620, h: 520, doors: [
+      { side: 'top', start: 260, end: 340 },
+      { side: 'right', start: 260, end: 340 },
+      { side: 'bottom', start: 260, end: 340 }
+    ] },
+    { x: 1000, y: 900, w: 620, h: 520, doors: [
+      { side: 'top', start: 260, end: 340 },
+      { side: 'left', start: 260, end: 340 },
+      { side: 'right', start: 260, end: 340 },
+      { side: 'bottom', start: 260, end: 340 }
+    ] },
+    { x: 1880, y: 900, w: 620, h: 520, doors: [
+      { side: 'top', start: 260, end: 340 },
+      { side: 'left', start: 260, end: 340 },
+      { side: 'bottom', start: 260, end: 340 }
+    ] },
+    { x: 120, y: 1680, w: 620, h: 520, doors: [
+      { side: 'top', start: 260, end: 340 },
+      { side: 'right', start: 260, end: 340 }
+    ] },
+    { x: 1000, y: 1680, w: 620, h: 520, doors: [
+      { side: 'top', start: 260, end: 340 },
+      { side: 'left', start: 260, end: 340 },
+      { side: 'right', start: 260, end: 340 }
+    ] },
+    { x: 1880, y: 1680, w: 620, h: 520, doors: [
+      { side: 'top', start: 260, end: 340 },
+      { side: 'left', start: 260, end: 340 }
     ] }
   ];
 
   const corridors = [
-    { x: 600, y: 260, w: 1500, h: 120, doors: [
-      { side: 'left', start: 120, end: 160 },
-      { side: 'right', start: 120, end: 160 },
-      { side: 'bottom', start: 720, end: 760 }
+    { x: 740, y: 240, w: 260, h: 280, doors: [
+      { side: 'left', start: 140, end: 220 },
+      { side: 'right', start: 140, end: 220 }
     ] },
-    { x: 1220, y: 380, w: 120, h: 1120, doors: [
-      { side: 'top', start: 20, end: 60 },
-      { side: 'bottom', start: 20, end: 60 }
+    { x: 1660, y: 240, w: 260, h: 280, doors: [
+      { side: 'left', start: 140, end: 220 },
+      { side: 'right', start: 140, end: 220 }
     ] },
-    { x: 600, y: 1660, w: 1500, h: 120, doors: [
-      { side: 'left', start: 120, end: 160 },
-      { side: 'right', start: 120, end: 160 },
-      { side: 'top', start: 720, end: 760 }
+    { x: 740, y: 1020, w: 260, h: 280, doors: [
+      { side: 'left', start: 140, end: 220 },
+      { side: 'right', start: 140, end: 220 }
+    ] },
+    { x: 1660, y: 1020, w: 260, h: 280, doors: [
+      { side: 'left', start: 140, end: 220 },
+      { side: 'right', start: 140, end: 220 }
+    ] },
+    { x: 740, y: 1840, w: 260, h: 280, doors: [
+      { side: 'left', start: 140, end: 220 },
+      { side: 'right', start: 140, end: 220 }
+    ] },
+    { x: 1660, y: 1840, w: 260, h: 280, doors: [
+      { side: 'left', start: 140, end: 220 },
+      { side: 'right', start: 140, end: 220 }
+    ] },
+    { x: 240, y: 640, w: 280, h: 260, doors: [
+      { side: 'top', start: 140, end: 220 },
+      { side: 'bottom', start: 140, end: 220 }
+    ] },
+    { x: 1120, y: 640, w: 280, h: 260, doors: [
+      { side: 'top', start: 140, end: 220 },
+      { side: 'bottom', start: 140, end: 220 }
+    ] },
+    { x: 2040, y: 640, w: 280, h: 260, doors: [
+      { side: 'top', start: 140, end: 220 },
+      { side: 'bottom', start: 140, end: 220 }
+    ] },
+    { x: 240, y: 1440, w: 280, h: 260, doors: [
+      { side: 'top', start: 140, end: 220 },
+      { side: 'bottom', start: 140, end: 220 }
+    ] },
+    { x: 1120, y: 1440, w: 280, h: 260, doors: [
+      { side: 'top', start: 140, end: 220 },
+      { side: 'bottom', start: 140, end: 220 }
+    ] },
+    { x: 2040, y: 1440, w: 280, h: 260, doors: [
+      { side: 'top', start: 140, end: 220 },
+      { side: 'bottom', start: 140, end: 220 }
     ] }
   ];
 
