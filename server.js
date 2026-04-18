@@ -57,6 +57,33 @@ function normalize(vx, vy) {
   return { x: vx / l, y: vy / l };
 }
 
+function segmentIntersects(x1, y1, x2, y2, x3, y3, x4, y4) {
+  const s1_x = x2 - x1;
+  const s1_y = y2 - y1;
+  const s2_x = x4 - x3;
+  const s2_y = y4 - y3;
+  const denom = (-s2_x * s1_y + s1_x * s2_y);
+  if (denom === 0) return false;
+  const s = (-s1_y * (x1 - x3) + s1_x * (y1 - y3)) / denom;
+  const t = ( s2_x * (y1 - y3) - s2_y * (x1 - x3)) / denom;
+  return s >= 0 && s <= 1 && t >= 0 && t <= 1;
+}
+
+function lineIntersectsRect(x1, y1, x2, y2, rect) {
+  if (x1 >= rect.x && x1 <= rect.x + rect.w && y1 >= rect.y && y1 <= rect.y + rect.h) return true;
+  if (x2 >= rect.x && x2 <= rect.x + rect.w && y2 >= rect.y && y2 <= rect.y + rect.h) return true;
+  return (
+    segmentIntersects(x1, y1, x2, y2, rect.x, rect.y, rect.x + rect.w, rect.y) ||
+    segmentIntersects(x1, y1, x2, y2, rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h) ||
+    segmentIntersects(x1, y1, x2, y2, rect.x + rect.w, rect.y + rect.h, rect.x, rect.y + rect.h) ||
+    segmentIntersects(x1, y1, x2, y2, rect.x, rect.y + rect.h, rect.x, rect.y)
+  );
+}
+
+function isLineObstructed(room, x1, y1, x2, y2) {
+  return room.walls.some((w) => lineIntersectsRect(x1, y1, x2, y2, w));
+}
+
 function buildMap() {
   const walls = [];
   walls.push({ x: 0, y: 0, w: MAP_W, h: WALL_T });
@@ -569,8 +596,11 @@ io.on("connection", (socket) => {
       }
     });
     if (victimId) {
-      killPlayer(room, victimId, socket.id);
-      broadcastRoom(room);
+      const victim = room.players.get(victimId);
+      if (victim && !isLineObstructed(room, killer.x, killer.y, victim.x, victim.y)) {
+        killPlayer(room, victimId, socket.id);
+        broadcastRoom(room);
+      }
     }
   });
 
@@ -616,6 +646,8 @@ setInterval(() => {
 
     room.players.forEach((p) => {
       if (!p.alive) return;
+      const oldX = p.x;
+      const oldY = p.y;
       const dx = (p.input.right ? 1 : 0) - (p.input.left ? 1 : 0);
       const dy = (p.input.down ? 1 : 0) - (p.input.up ? 1 : 0);
       if (dx !== 0 || dy !== 0) {
@@ -624,6 +656,10 @@ setInterval(() => {
         p.y += n.y * PLAYER_SPEED;
       }
       resolveWalls(room, p);
+      if (touchesAny(room, p.x, p.y)) {
+        p.x = oldX;
+        p.y = oldY;
+      }
     });
 
     // Bot AI
@@ -654,7 +690,9 @@ setInterval(() => {
               p.input = { up: false, down: false, left: false, right: false };
               return;
             }
-            killPlayer(room, target.id, id);
+            if (!isLineObstructed(room, p.x, p.y, target.player.x, target.player.y)) {
+              killPlayer(room, target.id, id);
+            }
             return;
           }
         }
@@ -778,13 +816,15 @@ setInterval(() => {
         room.bullets.splice(i, 1);
         continue;
       }
+      const prevX = b.x;
+      const prevY = b.y;
       b.x += b.vx;
       b.y += b.vy;
       if (b.x < 0 || b.x > MAP_W || b.y < 0 || b.y > MAP_H) {
         room.bullets.splice(i, 1);
         continue;
       }
-      if (room.walls.some((w) => b.x > w.x && b.x < w.x + w.w && b.y > w.y && b.y < w.y + w.h)) {
+      if (room.walls.some((w) => lineIntersectsRect(prevX, prevY, b.x, b.y, w))) {
         room.bullets.splice(i, 1);
         continue;
       }
