@@ -106,7 +106,8 @@
   <div id="deathOverlay">
     <div id="deathCard">
       <h2>ÖLDÜN</h2>
-      <p>Oyundan elendİn. Haritayı izleyebilirsin veya odadan ayrılabilirsin.</p>
+      <button id="watchMapBtn" type="button" style="margin-top: 12px;">Haritayı İzle</button>
+      <p style="margin-top: 20px;">Oyundan elendİn. Haritayı izleyebilirsin veya odadan ayrılabilirsin.</p>
       <button id="leaveRoomBtn" type="button">Çık</button>
     </div>
   </div>
@@ -186,6 +187,7 @@
     const resetCamBtn = document.getElementById("resetCamBtn");
     const sideLeaveBtn = document.getElementById("sideLeaveBtn");
     const leaveRoomBtn = document.getElementById("leaveRoomBtn");
+    const watchMapBtn = document.getElementById("watchMapBtn");
     const logBox = document.getElementById("logBox");
     const startBtn = document.getElementById("startBtn");
     const fillBotsBtn = document.getElementById("fillBotsBtn");
@@ -296,6 +298,15 @@
       specCamY = Math.max(0, Math.min(gameState.map.h - vh, gameState.map.h * 0.5 - vh * 0.5));
       camX = specCamX;
       camY = specCamY;
+    };
+
+    watchMapBtn.onclick = () => {
+      if (!gameState || !isSpectating()) return;
+      specCamX = Math.max(0, Math.min(gameState.map.w - vw, gameState.map.w * 0.5 - vw * 0.5));
+      specCamY = Math.max(0, Math.min(gameState.map.h - vh, gameState.map.h * 0.5 - vh * 0.5));
+      camX = specCamX;
+      camY = specCamY;
+      deathOverlay.style.display = "none";
     };
 
     socket.on("connect", () => {
