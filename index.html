@@ -65,6 +65,17 @@
       background: rgba(0, 0, 0, 0.6); border: 1px solid #663030; color: #ff9b9b;
       border-radius: 8px; padding: 12px 16px; letter-spacing: 1px; display: none; z-index: 5;
     }
+    #deathOverlay {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); z-index: 11;
+      display: none; align-items: center; justify-content: center; flex-direction: column;
+    }
+    #deathCard {
+      text-align: center; border: 2px solid #ff5555; background: #1a0f0f; border-radius: 12px;
+      padding: 30px; max-width: 400px;
+    }
+    #deathCard h2 { font-size: 32px; color: #ff5555; margin-bottom: 12px; letter-spacing: 2px; }
+    #deathCard p { color: #b5c0ea; margin-bottom: 20px; }
+    #deathCard button { margin: 6px; padding: 10px 16px; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -89,6 +100,14 @@
     <div>Canli: <span id="aliveTextSide">0</span></div>
     <div id="spectateHint" style="display:none; color:#ffd47e;">Öldün. WASD ile kamerayı hareket ettir.</div>
     <button id="resetCamBtn" type="button">Kamerayı Sıfırla</button>
+  </div>
+
+  <div id="deathOverlay">
+    <div id="deathCard">
+      <h2>ÖLDÜN</h2>
+      <p>Oyundan elendİn. Haritayı izleyebilirsin veya odadan ayrılabilirsin.</p>
+      <button id="leaveRoomBtn" type="button">Odadan Ayrıl</button>
+    </div>
   </div>
 
   <div id="logBox">
@@ -150,6 +169,7 @@
     let smoothPlayers = {};
 
     const overlay = document.getElementById("overlay");
+    const deathOverlay = document.getElementById("deathOverlay");
     const statusEl = document.getElementById("status");
     const roomText = document.getElementById("roomText");
     const phaseText = document.getElementById("phaseText");
@@ -163,6 +183,7 @@
     const playerCountTextSide = document.getElementById("playerCountTextSide");
     const spectateHint = document.getElementById("spectateHint");
     const resetCamBtn = document.getElementById("resetCamBtn");
+    const leaveRoomBtn = document.getElementById("leaveRoomBtn");
     const logBox = document.getElementById("logBox");
     const startBtn = document.getElementById("startBtn");
     const fillBotsBtn = document.getElementById("fillBotsBtn");
@@ -255,6 +276,12 @@
       socket.emit("fillWithBots", { roomId });
     };
 
+    leaveRoomBtn.onclick = () => {
+      roomId = "";
+      socket.disconnect();
+      location.reload();
+    };
+
     resetCamBtn.onclick = () => {
       if (!gameState || !isSpectating()) return;
       specCamX = Math.max(0, Math.min(gameState.map.w - vw, gameState.map.w * 0.5 - vw * 0.5));
@@ -287,6 +314,7 @@
       roleTextSide.textContent = roleText.textContent;
       aliveTextSide.textContent = aliveText.textContent;
       overlay.style.display = roomId ? "none" : "flex";
+      deathOverlay.style.display = isSpectating() ? "flex" : "none";
       logText.innerHTML = state.logs.map((l) => `- ${l.text}`).join("<br />") || "Log yok";
       spectateHint.style.display = isSpectating() ? "block" : "none";
       if (state.status === "lobby") {
