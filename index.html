@@ -47,6 +47,12 @@
       border-radius: 8px; padding: 10px;
     }
     #topUi { top: 12px; z-index: 4; line-height: 1.7; min-width: 230px; }
+    #sideUi {
+      position: fixed; right: 12px; top: 12px; z-index: 4; width: 220px;
+      background: rgba(0, 0, 0, 0.65); border: 1px solid #2a2f44; border-radius: 8px;
+      padding: 10px; display: flex; flex-direction: column; gap: 8px; color: #fff;
+    }
+    #sideUi button { align-self: flex-start; padding: 6px 10px; font-size: 12px; }
     #logBox { bottom: 12px; max-width: 420px; z-index: 4; color: #bac6f0; display: flex; flex-direction: column; gap: 8px; }
     #logBox button { align-self: flex-end; padding: 6px 10px; font-size: 12px; }
     #logText { line-height: 1.5; }
@@ -72,6 +78,17 @@
     Oyuncu: <span id="playerCountText">0/0</span><br />
     Rol: <span id="roleText">-</span><br />
     Canli: <span id="aliveText">0</span>
+  </div>
+
+  <div id="sideUi">
+    <div><strong>Yan Panel</strong></div>
+    <div>Oda: <span id="roomTextSide">-</span></div>
+    <div>Durum: <span id="phaseTextSide">Lobby</span></div>
+    <div>Oyuncu: <span id="playerCountTextSide">0/0</span></div>
+    <div>Rol: <span id="roleTextSide">-</span></div>
+    <div>Canli: <span id="aliveTextSide">0</span></div>
+    <div id="spectateHint" style="display:none; color:#ffd47e;">Öldün. WASD ile kamerayı hareket ettir.</div>
+    <button id="resetCamBtn" type="button">Kamerayı Sıfırla</button>
   </div>
 
   <div id="logBox">
@@ -139,6 +156,13 @@
     const roleText = document.getElementById("roleText");
     const aliveText = document.getElementById("aliveText");
     const playerCountText = document.getElementById("playerCountText");
+    const roomTextSide = document.getElementById("roomTextSide");
+    const phaseTextSide = document.getElementById("phaseTextSide");
+    const roleTextSide = document.getElementById("roleTextSide");
+    const aliveTextSide = document.getElementById("aliveTextSide");
+    const playerCountTextSide = document.getElementById("playerCountTextSide");
+    const spectateHint = document.getElementById("spectateHint");
+    const resetCamBtn = document.getElementById("resetCamBtn");
     const logBox = document.getElementById("logBox");
     const startBtn = document.getElementById("startBtn");
     const fillBotsBtn = document.getElementById("fillBotsBtn");
@@ -231,6 +255,14 @@
       socket.emit("fillWithBots", { roomId });
     };
 
+    resetCamBtn.onclick = () => {
+      if (!gameState || !isSpectating()) return;
+      specCamX = Math.max(0, Math.min(gameState.map.w - vw, gameState.map.w * 0.5 - vw * 0.5));
+      specCamY = Math.max(0, Math.min(gameState.map.h - vh, gameState.map.h * 0.5 - vh * 0.5));
+      camX = specCamX;
+      camY = specCamY;
+    };
+
     socket.on("connect", () => {
       myId = socket.id;
       setStatus("Sunucuya baglandi.");
@@ -249,8 +281,14 @@
       const me = myPlayer();
       roleText.textContent = me?.role ? me.role.toUpperCase() : "-";
       roleText.style.color = me?.role === "katil" ? "#ff5d5d" : (me?.role === "serif" ? "#ffe05d" : "#8dff95");
+      roomTextSide.textContent = roomText.textContent;
+      phaseTextSide.textContent = phaseText.textContent;
+      playerCountTextSide.textContent = playerCountText.textContent;
+      roleTextSide.textContent = roleText.textContent;
+      aliveTextSide.textContent = aliveText.textContent;
       overlay.style.display = roomId ? "none" : "flex";
       logText.innerHTML = state.logs.map((l) => `- ${l.text}`).join("<br />") || "Log yok";
+      spectateHint.style.display = isSpectating() ? "block" : "none";
       if (state.status === "lobby") {
         if (state.players.length < state.capacity) {
           const missing = state.capacity - state.players.length;
@@ -269,6 +307,7 @@
 
       const nowSpectating = isSpectating();
       spectateText.style.display = nowSpectating ? "block" : "none";
+      resetCamBtn.style.display = nowSpectating ? "inline-block" : "none";
       if (nowSpectating && !wasSpectating) {
         specCamX = Math.max(0, Math.min(state.map.w - vw, state.map.w * 0.5 - vw * 0.5));
         specCamY = Math.max(0, Math.min(state.map.h - vh, state.map.h * 0.5 - vh * 0.5));

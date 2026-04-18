@@ -128,6 +128,32 @@ function nearbyPlayerCount(room, x, y, radius, excludeIds = new Set()) {
   return count;
 }
 
+function findBestVictim(room, killerId) {
+  const killer = room.players.get(killerId);
+  if (!killer) return null;
+  let best = null;
+  let bestScore = Infinity;
+  room.players.forEach((p, id) => {
+    if (id === killerId || !p.alive || p.role === "katil") return;
+    const dist = Math.hypot(killer.x - p.x, killer.y - p.y);
+    const witnesses = nearbyPlayerCount(room, p.x, p.y, PLAYER_R * 4, new Set([killerId, id]));
+    const score = dist + witnesses * 200 + (p.role === "serif" ? 120 : 0);
+    if (score < bestScore) {
+      bestScore = score;
+      best = { id, player: p, dist, witnesses };
+    }
+  });
+  return best;
+}
+
+function chooseWanderTarget(p) {
+  const dir = Math.floor(Math.random() * 4);
+  return {
+    x: p.x + (dir === 2 ? -160 : dir === 3 ? 160 : 0),
+    y: p.y + (dir === 0 ? -160 : dir === 1 ? 160 : 0)
+  };
+}
+
 function touchesAny(room, x, y) {
   if (x < WALL_T + PLAYER_R || x > MAP_W - WALL_T - PLAYER_R) return true;
   if (y < WALL_T + PLAYER_R || y > MAP_H - WALL_T - PLAYER_R) return true;
@@ -146,6 +172,19 @@ function spawnPosition(room) {
 function addLog(room, text) {
   room.logs.push({ at: Date.now(), text });
   if (room.logs.length > 8) room.logs.shift();
+}
+
+function markWitnesses(room, killerId, x, y) {
+  const radius = 180;
+  room.players.forEach((p, id) => {
+    if (!p.alive || id === killerId || p.role === "katil") return;
+    if (!p.isBot) return;
+    const d = Math.hypot(p.x - x, p.y - y);
+    if (d <= radius) {
+      p.suspectedTargetId = killerId;
+      p.lastSuspectedAt = Date.now();
+    }
+  });
 }
 
 function dropGun(room, x, y) {
@@ -182,6 +221,7 @@ function roomSnapshot(room) {
       role: isLobby ? null : p.role,
       alive: p.alive,
       color: p.color,
+      suspectId: p.suspectId || null,
       sheriffCooldownLeft: Math.max(0, SHERIFF_COOLDOWN - (Date.now() - p.lastShotAt))
     });
   });
@@ -220,6 +260,7 @@ function killPlayer(room, victimSocketId, killerSocketId) {
 
   victim.alive = false;
   addLog(room, `${victim.name} elendi.`);
+  markWitnesses(room, killerSocketId, victim.x, victim.y);
 
   if (victim.role === "serif") {
     dropGun(room, victim.x, victim.y);
@@ -357,9 +398,9 @@ io.on("connection", (socket) => {
     if (!room || room.hostSocketId !== socket.id || room.status !== "lobby") return;
     let botCount = 1;
     while (room.players.size < room.capacity) {
-      const botId = `bot${botCount++}`;
+      const botId = `bot_${Date.now()}_${Math.random().toString(36).slice(2, 6)}_${botCount++}`;
       const idx = room.players.size % COLORS.length;
-      const nameIdx = (botCount - 2) % BOT_NAMES.length;
+      const nameIdx = room.players.size % BOT_NAMES.length;
       const sp = spawnPosition(room);
       room.players.set(botId, {
         name: BOT_NAMES[nameIdx],
@@ -473,78 +514,77 @@ setInterval(() => {
       if (!p.isBot || !p.alive) return;
       let targetX = p.x;
       let targetY = p.y;
-      if (p.role === "katil") {
-        // Killer: move towards closest alive non-killer
-        let closestDist = Infinity;
-        room.players.forEach((other, oid) => {
-          if (oid === id || !other.alive || other.role === "katil") return;
-          const d = Math.hypot(p.x - other.x, p.y - other.y);
-          if (d < closestDist) {
-            closestDist = d;
-            targetX = other.x;
-            targetY = other.y;
+      const suspectId = p.suspectedTargetId && room.players.has(p.suspectedTargetId) ? p.suspectedTargetId : null;
+      if (suspectId) {
+        const suspect = room.players.get(suspectId);
+        if (suspect && suspect.alive) {
+          targetX = suspect.x;
+          targetY = suspect.y;
+          if (Date.now() - (p.lastSuspectedAt || 0) > 12000) {
+            p.suspectedTargetId = null;
           }
-        });
-        if (closestDist < PLAYER_R * 3) {
-          let victimId = null;
-          let victim = null;
-          room.players.forEach((op, oid) => {
-            if (oid === id || !op.alive) return;
-            const d = Math.hypot(p.x - op.x, p.y - op.y);
-            if (d < PLAYER_R * 2.4) {
-              victimId = oid;
-              victim = op;
-            }
-          });
-          if (!victimId) return;
-          const witnessCount = nearbyPlayerCount(room, victim.x, victim.y, PLAYER_R * 4, new Set([id, victimId]));
-          if (witnessCount > 0) {
-            // If there are witnesses, wait and don't kill immediately
-            p.input = { up: false, down: false, left: false, right: false };
-            return;
-          }
-          killPlayer(room, victimId, id);
-          return;
+        } else {
+          p.suspectedTargetId = null;
         }
-      } else if (p.role === "masum") {
-        // Innocent: flee from the killer if nearby, otherwise wander
-        let killer = null;
-        room.players.forEach((other) => {
-          if (other.role === "katil" && other.alive) killer = other;
-        });
-        if (killer) {
-          const distToKiller = Math.hypot(p.x - killer.x, p.y - killer.y);
-          if (distToKiller < 360) {
-            const dx = p.x - killer.x;
-            const dy = p.y - killer.y;
-            const len = Math.hypot(dx, dy) || 1;
-            targetX = p.x + (dx / len) * 140;
-            targetY = p.y + (dy / len) * 140;
+      }
+      if (p.role === "katil") {
+        const target = findBestVictim(room, id);
+        if (target) {
+          targetX = target.player.x;
+          targetY = target.player.y;
+          if (target.dist < PLAYER_R * 3.5) {
+            if (target.witnesses > 0) {
+              p.input = { up: false, down: false, left: false, right: false };
+              return;
+            }
+            killPlayer(room, target.id, id);
+            return;
           }
         }
         if (Math.random() < 0.06) {
-          const dir = Math.floor(Math.random() * 4);
-          targetX = p.x + (dir === 2 ? -120 : dir === 3 ? 120 : 0);
-          targetY = p.y + (dir === 0 ? -120 : dir === 1 ? 120 : 0);
+          const wander = chooseWanderTarget(p);
+          targetX = wander.x;
+          targetY = wander.y;
+        }
+      } else if (p.role === "masum") {
+        if (!suspectId) {
+          let killer = null;
+          room.players.forEach((other) => {
+            if (other.role === "katil" && other.alive) killer = other;
+          });
+          if (killer) {
+            const distToKiller = Math.hypot(p.x - killer.x, p.y - killer.y);
+            if (distToKiller < 420) {
+              const dx = p.x - killer.x;
+              const dy = p.y - killer.y;
+              const len = Math.hypot(dx, dy) || 1;
+              targetX = p.x + (dx / len) * 220;
+              targetY = p.y + (dy / len) * 220;
+            }
+          }
+          if (Math.random() < 0.08) {
+            const wander = chooseWanderTarget(p);
+            targetX = wander.x;
+            targetY = wander.y;
+          }
         }
         const oldX = p.x;
         const oldY = p.y;
         const dx = targetX - p.x;
         const dy = targetY - p.y;
-        if (Math.hypot(dx, dy) > 8) {
+        if (Math.hypot(dx, dy) > 10) {
           const n = normalize(dx, dy);
           p.x += n.x * PLAYER_SPEED;
           p.y += n.y * PLAYER_SPEED;
         }
         resolveWalls(room, p);
         if (Math.hypot(p.x - oldX, p.y - oldY) < 1) {
-          const dir = Math.floor(Math.random() * 4);
-          targetX = p.x + (dir === 2 ? -120 : dir === 3 ? 120 : 0);
-          targetY = p.y + (dir === 0 ? -120 : dir === 1 ? 120 : 0);
+          const wander = chooseWanderTarget(p);
+          targetX = wander.x;
+          targetY = wander.y;
         }
         return;
       } else if (p.role === "serif") {
-        // Sheriff: search for killer and chase
         for (let i = room.gunPickups.length - 1; i >= 0; i -= 1) {
           const g = room.gunPickups[i];
           if (Math.hypot(p.x - g.x, p.y - g.y) < 30) {
@@ -563,7 +603,7 @@ setInterval(() => {
           targetX = killer.x;
           targetY = killer.y;
           const d = Math.hypot(p.x - killer.x, p.y - killer.y);
-          if (d < 220 && Date.now() - p.lastShotAt >= SHERIFF_COOLDOWN) {
+          if (d < 240 && Date.now() - p.lastShotAt >= SHERIFF_COOLDOWN) {
             const angle = Math.atan2(killer.y - p.y, killer.x - p.x);
             p.lastShotAt = Date.now();
             room.bullets.push({
@@ -575,10 +615,14 @@ setInterval(() => {
               bornAt: Date.now()
             });
           }
+        } else if (room.gunPickups.length > 0) {
+          const g = room.gunPickups[0];
+          targetX = g.x;
+          targetY = g.y;
         } else if (Math.random() < 0.04) {
-          const dir = Math.floor(Math.random() * 4);
-          targetX = p.x + (dir === 2 ? -120 : dir === 3 ? 120 : 0);
-          targetY = p.y + (dir === 0 ? -120 : dir === 1 ? 120 : 0);
+          const wander = chooseWanderTarget(p);
+          targetX = wander.x;
+          targetY = wander.y;
         }
       }
       const dx = targetX - p.x;
