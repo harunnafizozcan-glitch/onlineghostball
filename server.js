@@ -305,9 +305,24 @@ function touchesAny(room, x, y) {
 }
 
 function spawnPosition(room) {
-  for (let t = 0; t < 2000; t += 1) {
-    const x = WALL_T + PLAYER_R + Math.random() * (MAP_W - 2 * (WALL_T + PLAYER_R));
-    const y = WALL_T + PLAYER_R + Math.random() * (MAP_H - 2 * (WALL_T + PLAYER_R));
+  const spawnZones = [
+    { x: 294 + 310, y: 444 + 260 },
+    { x: 1174 + 310, y: 444 + 260 },
+    { x: 2054 + 310, y: 444 + 260 },
+    { x: 294 + 310, y: 1224 + 260 },
+    { x: 1174 + 310, y: 1224 + 260 },
+    { x: 2054 + 310, y: 1224 + 260 },
+    { x: 294 + 310, y: 2004 + 260 },
+    { x: 1174 + 310, y: 2004 + 260 },
+    { x: 2054 + 310, y: 2004 + 260 }
+  ];
+  
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const zone = spawnZones[Math.floor(Math.random() * spawnZones.length)];
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * 120 + 40;
+    const x = zone.x + Math.cos(angle) * dist;
+    const y = zone.y + Math.sin(angle) * dist;
     if (!touchesAny(room, x, y)) return { x, y };
   }
   return { x: MAP_W / 2, y: MAP_H / 2 };
