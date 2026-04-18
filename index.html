@@ -72,7 +72,10 @@
     Canli: <span id="aliveText">0</span>
   </div>
 
-  <div id="logBox">Log bekleniyor...</div>
+  <div id="logBox">
+    Log bekleniyor...
+    <button id="fillBotsLogBtn" type="button">Botlarla Doldur</button>
+  </div>
 
   <div id="overlay">
     <div id="card">
@@ -137,6 +140,7 @@
     const logBox = document.getElementById("logBox");
     const startBtn = document.getElementById("startBtn");
     const fillBotsBtn = document.getElementById("fillBotsBtn");
+    const fillBotsLogBtn = document.getElementById("fillBotsLogBtn");
     const nameInput = document.getElementById("nameInput");
     const roomInput = document.getElementById("roomInput");
     const openRoomsList = document.getElementById("openRoomsList");
@@ -219,6 +223,11 @@
       socket.emit("fillWithBots", { roomId });
     };
 
+    fillBotsLogBtn.onclick = () => {
+      if (!roomId) return;
+      socket.emit("fillWithBots", { roomId });
+    };
+
     socket.on("connect", () => {
       myId = socket.id;
       setStatus("Sunucuya baglandi.");
@@ -232,6 +241,8 @@
       playerCountText.textContent = `${state.players.length}/${state.capacity}`;
       startBtn.disabled = state.players.length < state.capacity || state.hostSocketId !== myId;
       fillBotsBtn.disabled = state.players.length >= state.capacity || state.hostSocketId !== myId;
+      fillBotsLogBtn.style.display = state.status === "lobby" && state.hostSocketId === myId ? "inline-block" : "none";
+      fillBotsLogBtn.disabled = state.players.length >= state.capacity || state.hostSocketId !== myId;
       const me = myPlayer();
       roleText.textContent = me?.role ? me.role.toUpperCase() : "-";
       roleText.style.color = me?.role === "katil" ? "#ff5d5d" : (me?.role === "serif" ? "#ffe05d" : "#8dff95");
